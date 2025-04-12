@@ -1,4 +1,3 @@
-```markdown
 # Implementation Strategy for a Gemma 3–Powered Mobile AI Assistant Chatbot
 
 **Objective:** Build a general-purpose AI assistant chatbot using Google’s **Gemma 3** model on mobile platforms. The solution will support **personalization** (custom voice, name, avatar), integrate with device features (calendar, health tracker), and enable **real-time** user interactions. Below we develop a detailed blueprint covering requirements, architecture, model fine-tuning, training methods, personalization strategies, deployment, data pipelines, relevant tools, and even interview Q&A.
@@ -190,4 +189,3 @@ To build this system efficiently, we will leverage several *trending open-source
 Staying updated with these projects will be important because the LLM field is rapidly evolving. We’ll watch Hugging Face Spaces and Model Zoo for any Gemma 3 fine-tunes (someone might release, say, “Gemma-3-Chat” which could accelerate our work). Also engage on forums (Reddit’s r/LocalLLaMA or r/MLops) to see how others are deploying mobile LLMs.
 
 By combining these open-source tools, we benefit from *community innovation* and avoid reinventing the wheel. This allows us to focus on the unique aspects of our assistant rather than building everything from scratch.
-```
