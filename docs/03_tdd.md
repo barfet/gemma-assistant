@@ -63,60 +63,49 @@ The system employs a **hybrid client-server architecture** designed for responsi
 **(Textual Description of Architecture Diagram)**
 
 ```mermaid
-graph LR
+flowchart LR
     subgraph "Mobile Device (iOS/Android)"
-        User -- Voice/Text Input --> AppUI[Mobile App UI]
-        AppUI -- User Input --> STT[Native Speech-to-Text]
-        STT -- Transcribed Text --> AgentCore[Agent Core (LangChain)]
-        AgentCore -- LLM Request --> OnDeviceLLM[On-Device Gemma 3 (Quantized)]
-        AgentCore -- Tool Request --> DeviceTools[Device API Tools (Calendar, Health)]
-        DeviceTools -- API Call --> NativeAPIs[Native Device APIs]
-        NativeAPIs -- Data --> DeviceTools
-        DeviceTools -- Tool Result --> AgentCore
-        OnDeviceLLM -- LLM Response --> AgentCore
-        AgentCore -- Text Response --> TTS[Native Text-to-Speech / Custom]
-        AgentCore -- Text Response --> AppUI
-        TTS -- Synthesized Speech --> AppUI
-        AppUI -- Display/Audio Output --> User
-        AgentCore -- Cloud Request (Optional) --> CloudConnector[Cloud Connector]
+        User["User"] --- AppUI["Mobile App UI"]
+        AppUI --> STT["Native Speech-to-Text"]
+        STT --> AgentCore["Agent Core (LangChain)"]
+        AgentCore --> OnDeviceLLM["On-Device Gemma 3 (Quantized)"]
+        AgentCore --> DeviceTools["Device API Tools (Calendar, Health)"]
+        DeviceTools --> NativeAPIs["Native Device APIs"]
+        NativeAPIs --> DeviceTools
+        DeviceTools --> AgentCore
+        OnDeviceLLM --> AgentCore
+        AgentCore --> TTS["Native Text-to-Speech / Custom"]
+        AgentCore --> AppUI
+        TTS --> AppUI
+        AppUI --> User
+        AgentCore --> CloudConnector["Cloud Connector"]
     end
 
     subgraph "Cloud Backend (GCP/AWS/Azure)"
-        CloudConnector -- API Call --> APIGateway[API Gateway]
-        APIGateway -- Authenticated Request --> BackendAPI[Backend API Service (FastAPI/Flask)]
-        BackendAPI -- Inference Request --> CloudLLMInf[Cloud LLM Inference (vLLM + Gemma 3)]
-        CloudLLMInf -- LLM Response --> BackendAPI
-        BackendAPI -- Response --> APIGateway
-        APIGateway -- Response --> CloudConnector
+        CloudConnector --> APIGateway["API Gateway"]
+        APIGateway --> BackendAPI["Backend API Service (FastAPI/Flask)"]
+        BackendAPI --> CloudLLMInf["Cloud LLM Inference (vLLM + Gemma 3)"]
+        CloudLLMInf --> BackendAPI
+        BackendAPI --> APIGateway
+        APIGateway --> CloudConnector
 
         subgraph "Data Pipeline & MLOps"
-            MCP[Model Customization Pipeline (Vertex AI / Kubeflow)]
-            LogStore[Anonymized Log Storage (Cloud Storage)]
-            TrainData[Training Data Store]
-            ModelRegistry[Model Registry]
-            Monitoring[Monitoring (LangSmith, CloudWatch/Prometheus)]
-            MobileApp -- Logs (Optional/Consented) --> LogStore
-            MCP -- Reads --> LogStore
-            MCP -- Cleans/Labels --> TrainData
-            MCP -- Trains Model --> ModelRegistry
-            MCP -- Deploys --> CloudLLMInf
-            MCP -- Publishes Adapter --> MobileApp(Adapter Download)
-            LangSmith -- Receives Traces --> Monitoring
-            BackendAPI -- Logs/Metrics --> Monitoring
-            CloudLLMInf -- Metrics --> Monitoring
+            MCP["Model Customization Pipeline (Vertex AI / Kubeflow)"]
+            LogStore["Anonymized Log Storage (Cloud Storage)"]
+            TrainData["Training Data Store"]
+            ModelRegistry["Model Registry"]
+            Monitoring["Monitoring (LangSmith, CloudWatch/Prometheus)"]
+            MobileApp["Mobile App"] --- LogStore
+            MCP --> LogStore
+            MCP --> TrainData
+            MCP --> ModelRegistry
+            MCP --> CloudLLMInf
+            MCP --> MobileApp
+            LangSmith["LangSmith"] --> Monitoring
+            BackendAPI --> Monitoring
+            CloudLLMInf --> Monitoring
         end
     end
-
-    User --> AppUI
-    AgentCore --> OnDeviceLLM
-    AgentCore --> DeviceTools
-    AgentCore --> TTS
-    OnDeviceLLM --> AgentCore
-    DeviceTools --> AgentCore
-    AgentCore --> CloudConnector
-    CloudConnector --> APIGateway
-    BackendAPI --> CloudLLMInf
-    CloudLLMInf --> BackendAPI
 ```
 
 **Data/Request Flow (Primary On-Device):**
@@ -248,21 +237,21 @@ graph LR
 
 **(Textual Flowchart for MCP)**
 ```mermaid
-graph TD
-    A[Anonymized Logs in Cloud Storage] --> B{Trigger Pipeline};
-    B -- Schedule/Volume --> C[Data Preprocessing (Dataflow/Spark)];
-    C -- Cleaned Data --> D[Training Data Store];
-    D --> E{Labeling?};
-    E -- Yes (Human/AI) --> F[Annotated Data];
-    E -- No --> G[Formatted Data];
-    F --> H[Fine-Tuning Job (Vertex AI/K8s + PEFT/RL)];
-    G --> H;
-    H -- Trained Artifact --> I[Evaluation (Holdout Set, Benchmarks, Safety)];
-    I -- Metrics --> J{Pass Criteria?};
-    J -- Yes --> K[Register Model/Adapter];
-    K --> L[Deploy to Cloud Inference];
-    K --> M[Publish Adapter for Mobile Download];
-    J -- No --> N[Log Failure & Alert];
+flowchart TD
+    A["Anonymized Logs in Cloud Storage"] --> B{"Trigger Pipeline"}
+    B -- "Schedule/Volume" --> C["Data Preprocessing (Dataflow/Spark)"]
+    C -- "Cleaned Data" --> D["Training Data Store"]
+    D --> E{"Labeling?"}
+    E -- "Yes (Human/AI)" --> F["Annotated Data"]
+    E -- "No" --> G["Formatted Data"]
+    F --> H["Fine-Tuning Job (Vertex AI/K8s + PEFT/RL)"]
+    G --> H
+    H -- "Trained Artifact" --> I["Evaluation (Holdout Set, Benchmarks, Safety)"]
+    I -- "Metrics" --> J{"Pass Criteria?"}
+    J -- "Yes" --> K["Register Model/Adapter"]
+    K --> L["Deploy to Cloud Inference"]
+    K --> M["Publish Adapter for Mobile Download"]
+    J -- "No" --> N["Log Failure & Alert"]
 ```
 
 **5. Security & Privacy Considerations**
