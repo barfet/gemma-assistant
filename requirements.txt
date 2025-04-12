@@ -1,0 +1,8 @@
+tiktoken
+huggingface_hub
+transformers
+torch
+coremltools
+tensorflow
+tensorflow-model-optimization
+tf_keras
